@@ -34,26 +34,29 @@ contract VoteFactory is Ownable {
     //     owner.transfer(this.balance);
     // }
 
-    function createVote(string _question) public {
+    function createVote(string _question) public  returns(bool){
         uint voteId = votes.push(Vote(_question, new string[](0))) - 1;
         voteToOwner[voteId] = msg.sender;
         ownerVoteCount[msg.sender]++;
         emit CreateVote(voteId, _question);
+        return true;
     }
 
-    function addAnswer(uint _voteId, string _answer) public onlyOwnerOf(_voteId) {
+    function addAnswer(uint _voteId, string _answer) public onlyOwnerOf(_voteId)  returns(bool){
         Vote storage myVote = votes[_voteId];
         uint answerId = myVote.answers.push(_answer) - 1;
         emit AddAnswer(answerId, _answer);
+        return true;
     }
 
-    function vote(uint _voteId, uint _answerId) public {
+    function vote(uint _voteId, uint _answerId) public returns(bool){
         Vote storage myVote = votes[_voteId];
         require(_answerId < myVote.answers.length);
         require(!myVote.voted[msg.sender]);
         myVote.countVotes[_voteId]++;
         myVote.voted[msg.sender] = true;
         emit PersonVote(_voteId, _answerId);
+        return true;
     }
 
 
