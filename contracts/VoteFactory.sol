@@ -18,6 +18,8 @@ contract VoteFactory is Ownable {
 
     Vote[] public votes;
 
+    uint pendingBalance;
+
     mapping(uint => address) voteToOwner;
     mapping(address => uint) ownerVoteCount;
 
@@ -26,13 +28,14 @@ contract VoteFactory is Ownable {
         _;
     }
 
-    // function deposit() payable external onlyOwner {
+    function donate() payable public {
+        pendingBalance += msg.value;
+    }
 
-    // }
-
-    // function withdraw() external onlyOwner {
-    //     owner.transfer(this.balance);
-    // }
+    function withdraw() external onlyOwner {
+        owner.transfer(pendingBalance);
+        pendingBalance = 0;
+    }
 
     function createVote(string _question) public  returns(bool){
         uint voteId = votes.push(Vote(_question, new string[](0))) - 1;
