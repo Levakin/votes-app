@@ -32,7 +32,7 @@ contract VoteFactory is Ownable {
         pendingBalance += msg.value;
     }
 
-    function withdraw() external onlyOwner {
+    function withdraw() public onlyOwner {
         owner.transfer(pendingBalance);
     }
 
@@ -58,19 +58,19 @@ contract VoteFactory is Ownable {
     }
 
 
-    function getQuestion(uint _voteId) view external returns(string) {
+    function getQuestion(uint _voteId) view public returns(string) {
         return votes[_voteId].question;
     }    
 
-    function getAnswer(uint _voteId, uint _answerId) view external returns(string) {
+    function getAnswer(uint _voteId, uint _answerId) view public returns(string) {
         return votes[_voteId].answers[_answerId];
     }
 
-    function countAnswers(uint _voteId) view external returns(uint) {
+    function countAnswers(uint _voteId) view public returns(uint) {
         return votes[_voteId].answers.length;
     }   
 
-    function countVotes(uint _voteId, uint _answerId) external view returns(uint) {
+    function countVotes(uint _voteId, uint _answerId) public view returns(uint) {
         return votes[_voteId].countVotes[_answerId];
     }
 }
