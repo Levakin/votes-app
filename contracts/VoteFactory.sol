@@ -8,14 +8,14 @@ contract VoteFactory is Ownable {
     event ChangeVote(uint256 indexed voteId, string question);
     event AddAnswer(uint256 indexed answerId, string answer);
     event ChangeAnswer(uint256 indexed voteId, uint256 indexed answerId, string answer);
-    event PersonVote(uint256 indexed voteId, uint256 indexed answerId);
+    event PersonVote(address indexed voterAddr, uint256 indexed voteId, uint256 indexed answerId);
 
 
     struct Vote {
         string question;
         string[] answers;
         mapping(uint256 => uint256) countVoted;
-        mapping(address => uint256) votedToAnswer;
+        mapping(address => bool) voted;
     }
 
     Vote[] public votes;
@@ -62,10 +62,10 @@ contract VoteFactory is Ownable {
 
     function vote(uint256 _voteId, uint256 _answerId) public {
         Vote storage myVote = votes[_voteId];
-        require(myVote.votedToAnswer[msg.sender] != 0);
+        require(!myVote.voted[msg.sender]);
         myVote.countVoted[_voteId]++;
-        myVote.votedToAnswer[msg.sender] = _answerId;
-        emit PersonVote(_voteId, _answerId);
+        myVote.voted[msg.sender] = true;
+        emit PersonVote(msg.sender, _voteId, _answerId);
     }
 
     function getQuestion(uint256 _voteId) view public returns(string) {
