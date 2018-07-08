@@ -1,28 +1,32 @@
-pragma solidity ^ 0.4.24;
+pragma solidity ^0.4.24;
 
 import "./Ownable.sol";
 
 contract VoteFactory is Ownable {
 
     event CreateVote(
+        address indexed person,
         uint256 indexed voteId,
         string question
     );
     event ChangeVote(
+        address indexed person,
         uint256 indexed voteId,
         string question
     );
     event AddAnswer(
+        address indexed person,
         uint256 indexed answerId,
         string answer
     );
     event ChangeAnswer(
+        address indexed person,
         uint256 indexed voteId,
         uint256 indexed answerId,
         string answer
     );
     event PersonVote(
-        address indexed voterAddr,
+        address indexed person,
         uint256 indexed voteId,
         uint256 indexed answerId
     );
@@ -59,7 +63,7 @@ contract VoteFactory is Ownable {
         uint256 voteId = votes.push(Vote(_question, new string[](0))) - 1;
         voteToOwner[voteId] = msg.sender;
         ownerVoteCount[msg.sender]++;
-        emit CreateVote(voteId, _question);
+        emit CreateVote(msg.sender, voteId, _question);
         return voteId;
     }
 
@@ -68,7 +72,7 @@ contract VoteFactory is Ownable {
         onlyOwnerOfVote(_voteId)
     {
         votes[_voteId].question = _question;
-        emit ChangeVote(_voteId, _question);
+        emit ChangeVote(msg.sender, _voteId, _question);
     }
 
     function addAnswer(uint256 _voteId, string _answer)
@@ -77,7 +81,7 @@ contract VoteFactory is Ownable {
         returns(uint256)
     {
         uint256 answerId = votes[_voteId].answers.push(_answer) - 1;
-        emit AddAnswer(answerId, _answer);
+        emit AddAnswer(msg.sender, answerId, _answer);
         return answerId;
     }
 
@@ -86,7 +90,7 @@ contract VoteFactory is Ownable {
         onlyOwnerOfVote(_voteId)
     {
         votes[_voteId].answers[_answerId] = _answer;
-        emit ChangeAnswer(_voteId, _answerId, _answer);
+        emit ChangeAnswer(msg.sender, _voteId, _answerId, _answer);
     }
 
     function vote(uint256 _voteId, uint256 _answerId) public {
