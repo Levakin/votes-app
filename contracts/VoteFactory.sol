@@ -4,11 +4,28 @@ import "./Ownable.sol";
 
 contract VoteFactory is Ownable {
 
-    event CreateVote(uint256 indexed voteId, string question);
-    event ChangeVote(uint256 indexed voteId, string question);
-    event AddAnswer(uint256 indexed answerId, string answer);
-    event ChangeAnswer(uint256 indexed voteId, uint256 indexed answerId, string answer);
-    event PersonVote(address indexed voterAddr, uint256 indexed voteId, uint256 indexed answerId);
+    event CreateVote(
+        uint256 indexed voteId,
+        string question
+    );
+    event ChangeVote(
+        uint256 indexed voteId,
+        string question
+    );
+    event AddAnswer(
+        uint256 indexed answerId,
+        string answer
+    );
+    event ChangeAnswer(
+        uint256 indexed voteId,
+        uint256 indexed answerId,
+        string answer
+    );
+    event PersonVote(
+        address indexed voterAddr,
+        uint256 indexed voteId,
+        uint256 indexed answerId
+    );
 
 
     struct Vote {
@@ -38,24 +55,36 @@ contract VoteFactory is Ownable {
         owner.transfer(pendingBalance);
     }
 
-    function createVote(string _question) public {
+    function createVote(string _question) public returns(uint256) {
         uint256 voteId = votes.push(Vote(_question, new string[](0))) - 1;
         voteToOwner[voteId] = msg.sender;
         ownerVoteCount[msg.sender]++;
         emit CreateVote(voteId, _question);
+        return voteId;
     }
 
-    function changeVote(uint256 _voteId, string _question) public onlyOwnerOfVote(_voteId){
+    function changeVote(uint256 _voteId, string _question)
+        public
+        onlyOwnerOfVote(_voteId)
+    {
         votes[_voteId].question = _question;
         emit ChangeVote(_voteId, _question);
     }
 
-    function addAnswer(uint256 _voteId, string _answer) public onlyOwnerOfVote(_voteId) {
+    function addAnswer(uint256 _voteId, string _answer)
+        public
+        onlyOwnerOfVote(_voteId)
+        returns(uint256)
+    {
         uint256 answerId = votes[_voteId].answers.push(_answer) - 1;
         emit AddAnswer(answerId, _answer);
+        return answerId;
     }
 
-    function changeAnswer(uint256 _voteId, uint256 _answerId, string _answer) public onlyOwnerOfVote(_voteId){
+    function changeAnswer(uint256 _voteId, uint256 _answerId, string _answer)
+        public
+        onlyOwnerOfVote(_voteId)
+    {
         votes[_voteId].answers[_answerId] = _answer;
         emit ChangeAnswer(_voteId, _answerId, _answer);
     }
@@ -72,7 +101,11 @@ contract VoteFactory is Ownable {
         return votes[_voteId].question;
     }    
 
-    function getAnswer(uint256 _voteId, uint256 _answerId) view public returns(string) {
+    function getAnswer(uint256 _voteId, uint256 _answerId)
+        view
+        public
+        returns(string)
+    {
         return votes[_voteId].answers[_answerId];
     }
 
@@ -84,7 +117,11 @@ contract VoteFactory is Ownable {
         return votes[_voteId].answers.length;
     }   
 
-    function countVoted(uint256 _voteId, uint256 _answerId) view public returns(uint256) {
+    function countVoted(uint256 _voteId, uint256 _answerId)
+        view
+        public
+        returns(uint256)
+    {
         return votes[_voteId].countVoted[_answerId];
     }
 }
