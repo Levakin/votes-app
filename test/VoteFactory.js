@@ -1,3 +1,22 @@
+expectThrow = async (promise)  => {
+    try {
+        await promise;
+    } catch (error) {
+        const invalidOpcode = error.message.search('invalid opcode') >= 0;
+        const outOfGas = error.message.search('out of gas') >= 0;
+        const revert = error.message.search('revert') >= 0;
+
+        assert(
+            invalidOpcode || outOfGas || revert,
+            'Expected throw, got \'' + error + '\' instead',
+        );
+        
+        return;
+    }
+
+    assert(false, 'Expected throw not received');
+};
+
 var VoteFactory = artifacts.require("VoteFactory");
 
 contract('VoteFactory', async (accounts) => {
@@ -104,6 +123,16 @@ contract('VoteFactory', async (accounts) => {
         assert.equal(numOfVoted, expectedNum, "not 2 voted successfully");
     });
     
+    it("should throw when smb doesn't have access to add answers", async() => {
+        let instance = await VoteFactory.deployed();
+
+        let question = "vote's question";
+        let answer = "answer";
+        let voteId = (await instance.createVote.call(question)).toNumber();
+        await instance.createVote(question);
+        await instance.addAnswer(voteId, answer)
+        await expectThrow(instance.addAnswer(voteId, answer, {from: accounts[1]}));
+    });
 });
 
 /*
