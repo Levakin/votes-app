@@ -89,7 +89,7 @@ contract('VoteFactory', async (accounts) => {
         let firstAnswer = "first";
         let secondAnswer = "second";
         let expectedNum = 2;
-    
+        await instance.createVote(question);
         let voteId = (await instance.createVote.call(question)).toNumber();
         await instance.createVote(question);
 
@@ -97,11 +97,10 @@ contract('VoteFactory', async (accounts) => {
 
         let answerId = (await instance.addAnswer.call(voteId, secondAnswer)).toNumber();
         await instance.addAnswer(voteId, secondAnswer);
-
         await instance.vote(voteId, answerId, {from : accounts[1]});
         await instance.vote(voteId, answerId, {from : accounts[2]});
         let numOfVoted = (await instance.countVoted.call(voteId, answerId)).toNumber();
-
+        
         assert.equal(numOfVoted, expectedNum, "not 2 voted successfully");
     });
     

@@ -16,6 +16,7 @@ contract VoteFactory is Ownable {
     );
     event AddAnswer(
         address indexed person,
+        uint256 indexed voteId,
         uint256 indexed answerId,
         string answer
     );
@@ -31,13 +32,12 @@ contract VoteFactory is Ownable {
         uint256 indexed answerId
     );
 
-
     struct Vote {
         string question;
         string[] answers;
         mapping(uint256 => uint256) countVoted;
         mapping(address => bool) voted;
-    }
+    }    
 
     Vote[] public votes;
 
@@ -81,7 +81,7 @@ contract VoteFactory is Ownable {
         returns(uint256)
     {
         uint256 answerId = votes[_voteId].answers.push(_answer) - 1;
-        emit AddAnswer(msg.sender, answerId, _answer);
+        emit AddAnswer(msg.sender, _voteId, answerId, _answer);
         return answerId;
     }
 
@@ -96,7 +96,7 @@ contract VoteFactory is Ownable {
     function vote(uint256 _voteId, uint256 _answerId) public {
         Vote storage myVote = votes[_voteId];
         require(!myVote.voted[msg.sender]);
-        myVote.countVoted[_voteId]++;
+        myVote.countVoted[_answerId]++;
         myVote.voted[msg.sender] = true;
         emit PersonVote(msg.sender, _voteId, _answerId);
     }
