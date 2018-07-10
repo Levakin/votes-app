@@ -1,22 +1,5 @@
-expectThrow = async (promise)  => {
-    try {
-        await promise;
-    } catch (error) {
-        const invalidOpcode = error.message.search('invalid opcode') >= 0;
-        const outOfGas = error.message.search('out of gas') >= 0;
-        const revert = error.message.search('revert') >= 0;
 
-        assert(
-            invalidOpcode || outOfGas || revert,
-            'Expected throw, got \'' + error + '\' instead',
-        );
-        
-        return;
-    }
-
-    assert(false, 'Expected throw not received');
-};
-
+var expectThrow = require("./helpers/expectThrow");
 var VoteFactory = artifacts.require("VoteFactory");
 
 contract('VoteFactory', async (accounts) => {
