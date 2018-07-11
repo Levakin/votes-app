@@ -35,6 +35,7 @@ contract VoteFactory is Ownable {
     struct Vote {
         string question;
         string[] answers;
+        mapping(address => uint256) personToAnswer;
         mapping(uint256 => uint256) countVoted;
         mapping(address => bool) voted;
     }    
@@ -44,7 +45,7 @@ contract VoteFactory is Ownable {
     uint256 pendingBalance;
 
     mapping(uint256 => address) voteToOwner;
-    mapping(address => uint256) ownerVoteCount;
+    // mapping(address => uint256) ownerVoteCount;
 
     modifier onlyOwnerOfVote(uint256 _voteId) {
         require(voteToOwner[_voteId] == msg.sender);
@@ -62,7 +63,7 @@ contract VoteFactory is Ownable {
     function createVote(string _question) public returns(uint256) {
         uint256 voteId = votes.push(Vote(_question, new string[](0))) - 1;
         voteToOwner[voteId] = msg.sender;
-        ownerVoteCount[msg.sender]++;
+        // ownerVoteCount[msg.sender]++;
         emit CreateVote(msg.sender, voteId, _question);
         return voteId;
     }
@@ -95,9 +96,16 @@ contract VoteFactory is Ownable {
 
     function vote(uint256 _voteId, uint256 _answerId) public {
         Vote storage myVote = votes[_voteId];
-        require(!myVote.voted[msg.sender]);
-        myVote.countVoted[_answerId]++;
-        myVote.voted[msg.sender] = true;
+        if(!myVote.voted[msg.sender]){
+            myVote.countVoted[_answerId]++;
+            myVote.personToAnswer[msg.sender] = _answerId;
+            myVote.voted[msg.sender] = true;
+        } else {
+            require(myVote.personToAnswer[msg.sender] != _answerId);
+            myVote.countVoted[myVote.personToAnswer[msg.sender]]--;
+            myVote.countVoted[_answerId]++;
+            myVote.personToAnswer[msg.sender] = _answerId;            
+        }
         emit PersonVote(msg.sender, _voteId, _answerId);
     }
 

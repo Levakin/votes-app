@@ -105,6 +105,31 @@ contract('VoteFactory', async (accounts) => {
         
         assert.equal(numOfVoted, expectedNum, "not 2 voted successfully");
     });
+
+    it("should create vote, add two answers, one person should vote for first answer and revote for second", async() => {
+        let instance = await VoteFactory.deployed();
+        
+        let question = "vote's question";
+        let firstAnswer = "first";
+        let secondAnswer = "second";
+        let expectedNum = 2;
+        await instance.createVote(question);
+        let voteId = (await instance.createVote.call(question)).toNumber();
+        await instance.createVote(question);
+
+        let firstAnswerId = (await instance.addAnswer.call(voteId, firstAnswer)).toNumber();
+        await instance.addAnswer(voteId, firstAnswer);
+
+        let secondAnswerId = (await instance.addAnswer.call(voteId, secondAnswer)).toNumber();
+        await instance.addAnswer(voteId, secondAnswer);
+
+        await instance.vote(voteId, firstAnswerId, {from : accounts[1]});
+        await instance.vote(voteId, secondAnswerId, {from : accounts[2]});
+        await instance.vote(voteId, secondAnswerId, {from : accounts[1]});
+        let numOfVoted = (await instance.countVoted.call(voteId, secondAnswerId)).toNumber();
+        
+        assert.equal(numOfVoted, expectedNum, "not 2 voted successfully");
+    });
     
     it("should throw when smb doesn't have access to add answers", async() => {
         let instance = await VoteFactory.deployed();
