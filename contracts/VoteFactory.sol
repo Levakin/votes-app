@@ -32,7 +32,14 @@ contract VoteFactory is Ownable {
         uint256 indexed answerId
     );
 
+    enum State {
+        Initial,
+        Started,
+        Stopped
+    }
+
     struct Vote {
+        State state;
         string question;
         string[] answers;
         mapping(address => uint256) personToAnswer;
@@ -52,6 +59,11 @@ contract VoteFactory is Ownable {
         _;
     }
 
+    modifier onlyVoteState(uint256 _voteId, State _state) {
+        require(votes[_voteId].state == _state);
+        _;
+    }
+
     function donate() payable public {
         pendingBalance += msg.value;
     }
@@ -61,7 +73,7 @@ contract VoteFactory is Ownable {
     }
 
     function createVote(string _question) public returns(uint256) {
-        uint256 voteId = votes.push(Vote(_question, new string[](0))) - 1;
+        uint256 voteId = votes.push(Vote(State.Initial, _question, new string[](0))) - 1;
         voteToOwner[voteId] = msg.sender;
         // ownerVoteCount[msg.sender]++;
         emit CreateVote(msg.sender, voteId, _question);
@@ -76,9 +88,24 @@ contract VoteFactory is Ownable {
         emit ChangeVote(msg.sender, _voteId, _question);
     }
 
+    function startVote(uint256 _voteId)
+        public
+        onlyOwnerOfVote(_voteId)
+    {
+        votes[_voteId].state = State.Started;
+    }
+
+    function stopVote(uint256 _voteId)
+        public
+        onlyOwnerOfVote(_voteId)
+    {
+        votes[_voteId].state = State.Stopped;
+    }
+
     function addAnswer(uint256 _voteId, string _answer)
         public
         onlyOwnerOfVote(_voteId)
+        onlyVoteState(_voteId, State.Initial)
         returns(uint256)
     {
         uint256 answerId = votes[_voteId].answers.push(_answer) - 1;
@@ -94,7 +121,10 @@ contract VoteFactory is Ownable {
         emit ChangeAnswer(msg.sender, _voteId, _answerId, _answer);
     }
 
-    function vote(uint256 _voteId, uint256 _answerId) public {
+    function vote(uint256 _voteId, uint256 _answerId) 
+        public
+        onlyVoteState(_voteId, State.Started) 
+    {
         Vote storage myVote = votes[_voteId];
         if(!myVote.voted[msg.sender]){
             myVote.countVoted[_answerId]++;
