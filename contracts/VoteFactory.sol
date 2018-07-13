@@ -65,12 +65,12 @@ contract VoteFactory is Ownable {
     }
 
     function donate() payable public {
-        pendingBalance += msg.value;
+        owner.transfer(msg.value);
     }
 
-    function withdraw() public onlyOwner {
-        owner.transfer(pendingBalance);
-    }
+    // function withdraw() public onlyOwner {
+    //     owner.transfer(pendingBalance);
+    // }
 
     function createVote(string _question) public returns(uint256) {
         uint256 voteId = votes.push(Vote(State.Initial, _question, new string[](0))) - 1;
@@ -149,6 +149,10 @@ contract VoteFactory is Ownable {
         returns(string)
     {
         return votes[_voteId].answers[_answerId];
+    }
+
+    function getState(uint256 _voteId) public view returns(State){
+        return votes[_voteId].state;
     }
 
     function countVotes() view public returns(uint256) {

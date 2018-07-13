@@ -99,6 +99,9 @@ contract('VoteFactory', async (accounts) => {
 
         let answerId = (await instance.addAnswer.call(voteId, secondAnswer)).toNumber();
         await instance.addAnswer(voteId, secondAnswer);
+
+        await instance.startVote(voteId);
+
         await instance.vote(voteId, answerId, {from : accounts[1]});
         await instance.vote(voteId, answerId, {from : accounts[2]});
         let numOfVoted = (await instance.countVoted.call(voteId, answerId)).toNumber();
@@ -123,6 +126,8 @@ contract('VoteFactory', async (accounts) => {
         let secondAnswerId = (await instance.addAnswer.call(voteId, secondAnswer)).toNumber();
         await instance.addAnswer(voteId, secondAnswer);
 
+        await instance.startVote(voteId);
+
         await instance.vote(voteId, firstAnswerId, {from : accounts[1]});
         await instance.vote(voteId, secondAnswerId, {from : accounts[2]});
         await instance.vote(voteId, secondAnswerId, {from : accounts[1]});
@@ -138,8 +143,23 @@ contract('VoteFactory', async (accounts) => {
         let answer = "answer";
         let voteId = (await instance.createVote.call(question)).toNumber();
         await instance.createVote(question);
-        await instance.addAnswer(voteId, answer)
+        await instance.addAnswer(voteId, answer);
         await expectThrow(instance.addAnswer(voteId, answer, {from: accounts[1]}));
+    });
+
+    it("should start and stop vote", async() => {
+        let stopped = 2;
+        let instance = await VoteFactory.deployed();
+        let question = "vote's question";
+
+        let voteId = (await instance.createVote.call(question)).toNumber();
+        await instance.createVote(question);
+        await instance.startVote(voteId);
+        await instance.stopVote(voteId);
+
+        let state = (await instance.getState.call(voteId)).toNumber();
+        console.log(state);
+        assert.equal(state, stopped, "not stopped");
     });
 });
 
