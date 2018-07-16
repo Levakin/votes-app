@@ -82,6 +82,7 @@ contract VoteFactory is Ownable {
 
     function changeVote(uint256 _voteId, string _question)
         public
+        onlyV
         onlyOwnerOfVote(_voteId)
     {
         votes[_voteId].question = _question;
@@ -151,7 +152,7 @@ contract VoteFactory is Ownable {
         return votes[_voteId].answers[_answerId];
     }
 
-    function getState(uint256 _voteId) public view returns(State){
+    function getState(uint256 _voteId) public view returns(State) {
         return votes[_voteId].state;
     }
 
