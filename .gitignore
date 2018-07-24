@@ -13,9 +13,17 @@ build_webpack
 # misc
 .DS_Store
 .env
-npm-debug.log
 .truffle-solidity-loader
+
+# Editors
 .vscode
 .idea
+
+# logs
+npm-debug.log
+
+# Nuxt build
 .nuxt
+
+# Nuxt generate
 dist
