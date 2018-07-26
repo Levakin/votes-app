@@ -9,25 +9,33 @@
     "build": "nuxt build",
     "start": "nuxt start",
     "generate": "nuxt generate",
-    "lint": "eslint --ext .js,.vue --ignore-path .gitignore .",
+    "lint": "eslint --ext .js,.vue --ignore-path .gitignore --ignore-pattern migrations/ --ignore-pattern test/ .",
     "lintfix": "eslint --fix --ext .js,.vue --ignore-path .gitignore --ignore-pattern migrations/ --ignore-pattern test/ .",
     "precommit": "npm run lint"
   },
   "dependencies": {
     "ajv": "^6.5.2",
+    "bootstrap-vue": "^2.0.0-rc.11",
+    "jquery": "^3.3.1",
     "nuxt": "^1.4.1",
-    "web3": "^1.0.0-beta.34",
-    "web3-eth-abi": "^1.0.0-beta.34",
+    "truffle": "^4.1.13",
+    "web3": "^1.0.0-beta.35",
+    "web3-eth-abi": "^1.0.0-beta.35",
     "websocket": "^1.0.26"
   },
   "devDependencies": {
+    "babel-core": "^6.26.3",
     "babel-eslint": "^8.2.6",
+    "babel-loader": "^7.1.5",
+    "babel-preset-env": "^1.7.0",
+    "chai": "*",
     "eslint": "^4.19.1",
     "eslint-config-prettier": "^2.9.0",
-    "eslint-friendly-formatter": "^3.0.0",
-    "eslint-loader": "^1.9.0",
+    "eslint-friendly-formatter": "^4.0.1",
+    "eslint-loader": "^2.1.0",
     "eslint-plugin-prettier": "^2.6.2",
-    "eslint-plugin-vue": "^4.7.0",
+    "eslint-plugin-vue": "^4.7.1",
+    "mocha": "^5.2.0",
     "prettier": "^1.13.7"
   }
 }

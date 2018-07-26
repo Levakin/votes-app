@@ -1,187 +1,209 @@
+var expectThrow = require('./helpers/expectThrow')
+var VoteFactory = artifacts.require('VoteFactory')
 
-var expectThrow = require("./helpers/expectThrow");
-var VoteFactory = artifacts.require("VoteFactory");
+contract('VoteFactory', async accounts => {
+  var instance
 
-contract('VoteFactory', async (accounts) => {
-    var instance ;
+  beforeEach('setup contract for each test', async function() {
+    instance = await VoteFactory.deployed()
+  })
 
-    beforeEach('setup contract for each test', async function () {
-        instance = await VoteFactory.deployed();
-    });
+  it('should create new vote correctly', async () => {
+    let question = "vote's question"
 
-    it("should create new vote correctly", async () => {
+    await instance.createVote(question)
+  })
 
-        let question = "vote's question";
+  it('should get second question', async () => {
+    let expectedQuestion = "vote's question"
 
-        await instance.createVote(question);
-    });
+    await instance.createVote('first')
 
-    it("should get second question", async() => {
+    let voteId = (await instance.createVote.call(expectedQuestion)).toNumber()
+    await instance.createVote(expectedQuestion)
 
-        let expectedQuestion = "vote's question";
+    let createdQuestion = await instance.getQuestion.call(voteId)
 
-        await instance.createVote("first");
+    assert.equal(
+      expectedQuestion,
+      createdQuestion,
+      "Vote wasn't created successfully"
+    )
+  })
 
-        let voteId = (await instance.createVote.call(expectedQuestion)).toNumber();
-        await instance.createVote(expectedQuestion);
+  it('should change second question', async () => {
+    let initialQuestion = "vote's question"
+    let expectedQuestion = 'changed question'
 
-        let createdQuestion = await instance.getQuestion.call(voteId);
+    await instance.createVote('first')
 
-        assert.equal(expectedQuestion, createdQuestion, "Vote wasn't created successfully");
-    });
+    let voteId = (await instance.createVote.call(initialQuestion)).toNumber()
+    await instance.createVote(initialQuestion)
 
-    it("should change second question", async() => {
-        let initialQuestion = "vote's question";
-        let expectedQuestion = "changed question";
+    await instance.setQuestion(voteId, expectedQuestion)
+    let changedQuestion = await instance.getQuestion.call(voteId)
 
-        await instance.createVote("first");
+    assert.equal(
+      expectedQuestion,
+      changedQuestion,
+      "Vote wasn't changed successfully"
+    )
+  })
 
-        let voteId = (await instance.createVote.call(initialQuestion)).toNumber();
-        await instance.createVote(initialQuestion);
+  it('should get correct second answer', async () => {
+    let question = "vote's question"
+    let firstAnswer = 'first'
+    let secondAnswer = 'second'
 
-        await instance.setQuestion(voteId, expectedQuestion);        
-        let changedQuestion = await instance.getQuestion.call(voteId);
+    let voteId = (await instance.createVote.call(question)).toNumber()
+    await instance.createVote(question)
 
-        assert.equal(expectedQuestion, changedQuestion, "Vote wasn't changed successfully");
-    });
+    await instance.addAnswer(voteId, firstAnswer)
 
-    it("should get correct second answer", async() => {
-        
-        let question = "vote's question";
-        let firstAnswer = "first";
-        let secondAnswer = "second";
+    let answerId = (await instance.addAnswer.call(
+      voteId,
+      firstAnswer
+    )).toNumber()
+    await instance.addAnswer(voteId, secondAnswer)
+    let answer = await instance.getAnswer(voteId, answerId)
 
-        let voteId = (await instance.createVote.call(question)).toNumber();
-        await instance.createVote(question);
+    assert.equal(answer, secondAnswer, "Answer wasn't added successfully")
+  })
 
-        await instance.addAnswer(voteId, firstAnswer);
-        
-        let answerId = (await instance.addAnswer.call(voteId, firstAnswer)).toNumber();
-        await instance.addAnswer(voteId, secondAnswer);
-        let answer = await instance.getAnswer(voteId, answerId);
+  it('should change second answer', async () => {
+    let question = "vote's question"
+    let firstAnswer = 'first'
+    let secondAnswer = 'second'
+    let changedAnswer = 'changed'
 
-        assert.equal(answer, secondAnswer, "Answer wasn't added successfully");
-    });
+    let voteId = (await instance.createVote.call(question)).toNumber()
+    await instance.createVote(question)
 
-    it("should change second answer", async() => {
-        
-        let question = "vote's question";
-        let firstAnswer = "first";
-        let secondAnswer = "second";
-        let changedAnswer = "changed";
+    await instance.addAnswer(voteId, firstAnswer)
 
-        let voteId = (await instance.createVote.call(question)).toNumber();
-        await instance.createVote(question);
+    let answerId = (await instance.addAnswer.call(
+      voteId,
+      firstAnswer
+    )).toNumber()
+    await instance.addAnswer(voteId, secondAnswer)
 
-        await instance.addAnswer(voteId, firstAnswer);
+    await instance.setAnswer(voteId, answerId, changedAnswer)
+    let answer = await instance.getAnswer(voteId, answerId)
 
-        let answerId = (await instance.addAnswer.call(voteId, firstAnswer)).toNumber();
-        await instance.addAnswer(voteId, secondAnswer);
+    assert.equal(answer, changedAnswer, "Answer wasn't changed successfully")
+  })
 
-        await instance.setAnswer(voteId, answerId, changedAnswer);
-        let answer = await instance.getAnswer(voteId, answerId);
+  it('two people should vote for second answer', async () => {
+    let question = "vote's question"
+    let firstAnswer = 'first'
+    let secondAnswer = 'second'
+    let expectedNum = 2
+    await instance.createVote(question)
+    let voteId = (await instance.createVote.call(question)).toNumber()
+    await instance.createVote(question)
 
-        assert.equal(answer, changedAnswer, "Answer wasn't changed successfully");
-    });
+    await instance.addAnswer(voteId, firstAnswer)
 
-    it("two people should vote for second answer", async() => {
-        
-        let question = "vote's question";
-        let firstAnswer = "first";
-        let secondAnswer = "second";
-        let expectedNum = 2;
-        await instance.createVote(question);
-        let voteId = (await instance.createVote.call(question)).toNumber();
-        await instance.createVote(question);
+    let answerId = (await instance.addAnswer.call(
+      voteId,
+      secondAnswer
+    )).toNumber()
+    await instance.addAnswer(voteId, secondAnswer)
 
-        await instance.addAnswer(voteId, firstAnswer);
+    await instance.startVote(voteId)
 
-        let answerId = (await instance.addAnswer.call(voteId, secondAnswer)).toNumber();
-        await instance.addAnswer(voteId, secondAnswer);
+    await instance.cast(voteId, answerId, { from: accounts[1] })
+    await instance.cast(voteId, answerId, { from: accounts[2] })
+    let numCast = (await instance.countCast.call(voteId, answerId)).toNumber()
 
-        await instance.startVote(voteId);
+    assert.equal(numCast, expectedNum, 'not 2 voted successfully')
+  })
 
-        await instance.cast(voteId, answerId, {from : accounts[1]});
-        await instance.cast(voteId, answerId, {from : accounts[2]});
-        let numCast = (await instance.countCast.call(voteId, answerId)).toNumber();
-        
-        assert.equal(numCast, expectedNum, "not 2 voted successfully");
-    });
+  it('person should vote for first answer and revote for second', async () => {
+    let question = "vote's question"
+    let firstAnswer = 'first'
+    let secondAnswer = 'second'
+    let expectedNum = 2
+    await instance.createVote(question)
+    let voteId = (await instance.createVote.call(question)).toNumber()
+    await instance.createVote(question)
 
-    it("person should vote for first answer and revote for second", async() => {
-        let question = "vote's question";
-        let firstAnswer = "first";
-        let secondAnswer = "second";
-        let expectedNum = 2;
-        await instance.createVote(question);
-        let voteId = (await instance.createVote.call(question)).toNumber();
-        await instance.createVote(question);
+    let firstAnswerId = (await instance.addAnswer.call(
+      voteId,
+      firstAnswer
+    )).toNumber()
+    await instance.addAnswer(voteId, firstAnswer)
 
-        let firstAnswerId = (await instance.addAnswer.call(voteId, firstAnswer)).toNumber();
-        await instance.addAnswer(voteId, firstAnswer);
+    let secondAnswerId = (await instance.addAnswer.call(
+      voteId,
+      secondAnswer
+    )).toNumber()
+    await instance.addAnswer(voteId, secondAnswer)
 
-        let secondAnswerId = (await instance.addAnswer.call(voteId, secondAnswer)).toNumber();
-        await instance.addAnswer(voteId, secondAnswer);
+    await instance.startVote(voteId)
 
-        await instance.startVote(voteId);
+    await instance.cast(voteId, firstAnswerId, { from: accounts[1] })
+    await instance.cast(voteId, secondAnswerId, { from: accounts[2] })
+    await instance.cast(voteId, secondAnswerId, { from: accounts[1] })
+    let numCast = (await instance.countCast.call(
+      voteId,
+      secondAnswerId
+    )).toNumber()
 
-        await instance.cast(voteId, firstAnswerId, {from : accounts[1]});
-        await instance.cast(voteId, secondAnswerId, {from : accounts[2]});
-        await instance.cast(voteId, secondAnswerId, {from : accounts[1]});
-        let numCast = (await instance.countCast.call(voteId, secondAnswerId)).toNumber();
-        
-        assert.equal(numCast, expectedNum, "not revoted successfully");
-    });
-    
-    it("should throw when smb doesn't have access to add answers", async() => {
-        let question = "vote's question";
-        let answer = "answer";
-        let voteId = (await instance.createVote.call(question)).toNumber();
-        await instance.createVote(question);
-        await instance.addAnswer(voteId, answer);
-        await expectThrow(instance.addAnswer(voteId, answer, {from: accounts[1]}));
-    });
+    assert.equal(numCast, expectedNum, 'not revoted successfully')
+  })
 
-    it("should start and stop vote", async() => {
-        let stopped = 2;
-        let question = "vote's question";
+  it("should throw when smb doesn't have access to add answers", async () => {
+    let question = "vote's question"
+    let answer = 'answer'
+    let voteId = (await instance.createVote.call(question)).toNumber()
+    await instance.createVote(question)
+    await instance.addAnswer(voteId, answer)
+    await expectThrow(instance.addAnswer(voteId, answer, { from: accounts[1] }))
+  })
 
-        let voteId = (await instance.createVote.call(question)).toNumber();
-        await instance.createVote(question);
-        await instance.startVote(voteId);
-        await instance.stopVote(voteId);
+  it('should start and stop vote', async () => {
+    let stopped = 2
+    let question = "vote's question"
 
-        let state = (await instance.getState.call(voteId)).toNumber();
-        assert.equal(state, stopped, "not stopped");
-    });
+    let voteId = (await instance.createVote.call(question)).toNumber()
+    await instance.createVote(question)
+    await instance.startVote(voteId)
+    await instance.stopVote(voteId)
 
-    it("should get correct results", async() => {
-        let question = "vote's question";
-        let firstAnswer = "first";
-        let secondAnswer = "second";
+    let state = (await instance.getState.call(voteId)).toNumber()
+    assert.equal(state, stopped, 'not stopped')
+  })
 
-        await instance.createVote(question);
-        let voteId = (await instance.createVote.call(question)).toNumber();
-        await instance.createVote(question);
+  it('should get correct results', async () => {
+    let question = "vote's question"
+    let firstAnswer = 'first'
+    let secondAnswer = 'second'
 
-        await instance.addAnswer(voteId, firstAnswer);
+    await instance.createVote(question)
+    let voteId = (await instance.createVote.call(question)).toNumber()
+    await instance.createVote(question)
 
-        let answerId = (await instance.addAnswer.call(voteId, secondAnswer)).toNumber();
-        await instance.addAnswer(voteId, secondAnswer);
+    await instance.addAnswer(voteId, firstAnswer)
 
-        await instance.startVote(voteId);
+    let answerId = (await instance.addAnswer.call(
+      voteId,
+      secondAnswer
+    )).toNumber()
+    await instance.addAnswer(voteId, secondAnswer)
 
-        await instance.cast(voteId, answerId, {from : accounts[1]});
-        await instance.cast(voteId, answerId, {from : accounts[2]});
-        
-        await instance.stopVote(voteId);
+    await instance.startVote(voteId)
 
+    await instance.cast(voteId, answerId, { from: accounts[1] })
+    await instance.cast(voteId, answerId, { from: accounts[2] })
 
-        let result = await instance.getResultsQuestion.call(voteId);
-        
-        assert.equal(result, secondAnswer, "not correct result");
-    });
-});
+    await instance.stopVote(voteId)
+
+    let result = await instance.getResultsQuestion.call(voteId)
+
+    assert.equal(result, secondAnswer, 'not correct result')
+  })
+})
 
 /*
     it("", async() => {

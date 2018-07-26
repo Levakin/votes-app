@@ -15,35 +15,35 @@ export const state = () => ({})
 export const mutations = {}
 
 export const actions = {
-	// getName() {
-	// 	return eip20.methods.name().call({ from: account })
-	// },
-	// async transfer(context, params) {
-	// 	const transferMethod = EIP20.abi.find(method => {
-	// 		return method.name === 'transfer'
-	// 	})
-	//
-	// 	const transferMethodTransactionData = web3Abi.encodeFunctionCall(
-	// 		transferMethod,
-	// 		[params.to, web3.utils.toBN(params.value)]
-	// 	)
-	//
-	// 	const estimateGas = await web3.eth.estimateGas({
-	// 		from: account,
-	// 		to: tokenAddress,
-	// 		data: transferMethodTransactionData
-	// 	})
-	//
-	// 	const receipt = await web3.eth.sendTransaction({
-	// 		from: account,
-	// 		to: tokenAddress,
-	// 		data: transferMethodTransactionData,
-	// 		value: 0,
-	// 		gas: estimateGas
-	// 	})
-	//
-	// 	return receipt
-	// }
+  // getName() {
+  // 	return eip20.methods.name().call({ from: account })
+  // },
+  // async transfer(context, params) {
+  // 	const transferMethod = EIP20.abi.find(method => {
+  // 		return method.name === 'transfer'
+  // 	})
+  //
+  // 	const transferMethodTransactionData = web3Abi.encodeFunctionCall(
+  // 		transferMethod,
+  // 		[params.to, web3.utils.toBN(params.value)]
+  // 	)
+  //
+  // 	const estimateGas = await web3.eth.estimateGas({
+  // 		from: account,
+  // 		to: tokenAddress,
+  // 		data: transferMethodTransactionData
+  // 	})
+  //
+  // 	const receipt = await web3.eth.sendTransaction({
+  // 		from: account,
+  // 		to: tokenAddress,
+  // 		data: transferMethodTransactionData,
+  // 		value: 0,
+  // 		gas: estimateGas
+  // 	})
+  //
+  // 	return receipt
+  // }
 }
 
 export const getters = {}
